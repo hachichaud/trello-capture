@@ -14,30 +14,44 @@ var tc = new TrelloClient()
 function changeOpacity(_oldColor, opacity) {
   var oldColor = _oldColor.split(',')
     , newColor = 'rgba(';
-    
-  newColor += oldColor[0].split('(')[1] + ',' + oldColor[1] + ',' + oldColor[2].split(')')[0] + ',' + (opacity || 1) + ')';  
+
+  newColor += oldColor[0].split('(')[1] + ',' + oldColor[1] + ',' + oldColor[2].split(')')[0] + ',' + (opacity || 1) + ')';
   return newColor;
 }
-  
+
 function populateBoardsList(cb) {
   var callback = cb || function() {};
-  
+
   tc.getAllBoards(function(err) {
     var options = "";
 
     if (err) { return callback(err); }
-    
-    tc.openBoards.sort(function (a, b) { return a.name < b.name ? -1 : 1; }).forEach(function (board) {
+
+    tc.openBoards.sort(function (a, b) {
+      if (a.name == 'Toucan Dev - Team Studio') {
+        return -1;
+      }
+      if (a.name == 'Toucan Dev - Team Engine') {
+        return -1;
+      }
+      if (b.name == 'Toucan Dev - Team Studio') {
+        return 1;
+      }
+      if (b.name == 'Toucan Dev - Team Engine') {
+        return 1;
+      }
+      return a.name < b.name ? -1 : 1;
+    }).forEach(function (board) {
       options += '<option value="' + board.id + '">' + board.name + '</option>';
     });
-    
+
     $('#boardsList').html(options);
-    
+
     // Use remembered value if there is one
     if (localStorage.currentBoardId) {
       $('#boardsList option[value="' + localStorage.currentBoardId + '"]').prop('selected', true);
     }
-    
+
     return callback(null);
   });
 }
@@ -54,7 +68,7 @@ function populateLabelNamesList(cb) {
     Object.keys(tc.currentLabels).forEach(function(color) {
       $('.label-pickers div.' + color).html(tc.currentLabels[color] + "&nbsp;");   // Small hack ...
     });
-    
+
   });
 }
 
@@ -63,18 +77,26 @@ function populateListsList(cb) {
   var callback = cb || function() {}
     , selectedBoardId = $('#boardsList option:selected').val()
     ;
-    
+
   tc.getAllCurrentLists(selectedBoardId, function (err) {
     var options = "";
 
     if (err) { return callback(err); }
-    
-    tc.currentLists.sort(function (a, b) { return a.name < b.name ? -1 : 1; }).forEach(function (list) {
+
+    tc.currentLists.sort(function (a, b) {
+      if (a.name == 'Inbox') {
+        return -1;
+      }
+      if (b.name == 'Inbox') {
+        return 1;
+      }
+      return a.name < b.name ? -1 : 1; }
+    ).forEach(function (list) {
       options += '<option value="' + list.id + '">' + list.name + '</option>';
     });
-    
+
     $('#listsList').html(options);
-    
+
     // Use remembered value if there is one
     if (localStorage.currentListId) {
       $('#listsList option[value="' + localStorage.currentListId + '"]').prop('selected', true);
@@ -101,7 +123,7 @@ function updateUploadProgress(e) {
   var progress = Math.floor(100 * (e.loaded / e.total));
 
   $('#progress-bar').css('width', progress + '%');
-  
+
   if (progress === 100) {
     setTimeout(function () {
       $('#cardWasCreated').css('display', 'block');
@@ -127,16 +149,16 @@ function validateText(inputId, lowerBound, upperBound) {
       , $parentDiv = $input.parent()
       , $errorMessage = $parentDiv.find('div.alert')
       ;
-    
+
     if (value.length >= lowerBound && value.length <= upperBound) {
       $parentDiv.removeClass('has-error');
       $errorMessage.css('display', 'none');
       return true;
     } else {
-      $parentDiv.addClass('has-error');  
+      $parentDiv.addClass('has-error');
       $errorMessage.css('display', 'block');
       return false;
-    }  
+    }
   }
 }
 
@@ -203,7 +225,7 @@ window.ms = ms;   // TODO: remove, for testing only
 // Manage background-color behavior on click for labels
 possibleLabels.forEach(function(label) {
   var $label = $('.' + label);
-  
+
   // Initial state
   $label.css('background-color', changeOpacity($label.css('background-color'), 0.35));
 
@@ -212,7 +234,7 @@ possibleLabels.forEach(function(label) {
     if ($label.hasClass('selected')) {
       $label.css('background-color', changeOpacity($label.css('background-color'), 1));
     } else {
-      $label.css('background-color', changeOpacity($label.css('background-color'), 0.35));    
+      $label.css('background-color', changeOpacity($label.css('background-color'), 0.35));
     }
   });
 });
@@ -237,9 +259,9 @@ $('#on-top').on('change', function () {
 $('#createCard').on('click', function () {
   if (!ms.currentBase64Image) { return; }
   if (!validateCardName() || !validateCardDesc()) { return; }
-  
+
   var selectedListId = $('#listsList option:selected').val();
-  
+
   // Create card
   tc.createCardAtBottomOfCurrentList(selectedListId, $('#cardName').val(), $('#cardDesc').val(), getSelectedLabels(), function (err, cardId) {
     async.waterfall([
@@ -248,7 +270,7 @@ $('#createCard').on('click', function () {
           tc.putCardOnTopOfList(cardId, cb);
         } else {
           return cb();
-        }      
+        }
       }
     ], function () {
       $('#progress-bar-container').css('display', 'block');
