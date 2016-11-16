@@ -66,7 +66,12 @@ function populateLabelNamesList(cb) {
     if (err) { return callback(err); }
 
     Object.keys(tc.currentLabels).forEach(function(color) {
-      $('.label-pickers div.' + color).html(tc.currentLabels[color] + "&nbsp;");   // Small hack ...
+      var currentLabelElement = $('.label-pickers div.' + color)
+      currentLabelElement.html(tc.currentLabels[color] + "&nbsp;");   // Small hack ...
+      if (tc.currentLabels[color] == 'Bug') {
+        currentLabelElement.addClass("selected"); // Select bug by default
+        currentLabelElement.css('background-color', changeOpacity(currentLabelElement.css('background-color'), 1));
+      }
     });
 
   });
@@ -84,10 +89,10 @@ function populateListsList(cb) {
     if (err) { return callback(err); }
 
     tc.currentLists.sort(function (a, b) {
-      if (a.name == 'Inbox') {
+      if (a.name == 'Inbox' || a.name.includes('Inbox')) {
         return -1;
       }
-      if (b.name == 'Inbox') {
+      if (b.name == 'Inbox' || b.name.includes('Inbox')) {
         return 1;
       }
       return a.name < b.name ? -1 : 1; }
@@ -180,7 +185,7 @@ var totalHeight = $('body').height()
   , topPaneHeight = 50
   , screenshotPaneHeight = totalHeight - topPaneHeight
   , rightPanesWidth = Math.floor(totalWidth * screenshotPaneHeight / totalHeight)
-  , leftPaneWidth = Math.floor(0.2 * totalWidth)
+  , leftPaneWidth = Math.floor(0.4 * totalWidth)
   , baseLeftPanePosition = Math.max(totalWidth - rightPanesWidth - leftPaneWidth, 20 - leftPaneWidth)
   ;
 
@@ -261,6 +266,7 @@ $('#createCard').on('click', function () {
   if (!validateCardName() || !validateCardDesc()) { return; }
 
   var selectedListId = $('#listsList option:selected').val();
+  var linkUrl = $('#url-input').val();
 
   // Create card
   tc.createCardAtBottomOfCurrentList(selectedListId, $('#cardName').val(), $('#cardDesc').val(), getSelectedLabels(), function (err, cardId) {
@@ -275,7 +281,9 @@ $('#createCard').on('click', function () {
     ], function () {
       $('#progress-bar-container').css('display', 'block');
       ms.persistCurrentScreenshot(function () {
-        tc.attachBase64ImageToCard(cardId, ms.currentBase64Image, updateUploadProgress, cardWasCreated);
+        tc.attachBase64ImageToCard(cardId, ms.currentBase64Image, updateUploadProgress, function() {
+          tc.addUrlLink(cardId, linkUrl, cardWasCreated);
+        });
       });
     });
   });
@@ -331,6 +339,9 @@ function tryToLogIn() {
   });
 }
 
+function setTabUrl(url) {
+  $('#url-input').val(url);
+}
 
 $('#login-button').on('click', tryToLogIn);
 $('#login-box').on('keypress', function(evt) {
@@ -342,4 +353,5 @@ $('#login-box').on('keypress', function(evt) {
 // When we receive an image
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   ms.setAsBackground(request.imageData);
+  setTabUrl(request.currentTabUrl);
 });

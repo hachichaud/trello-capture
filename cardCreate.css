@@ -8,9 +8,13 @@
   padding: 20px;
   box-sizing: border-box;
   border-right: solid 1px black;
-  transition: left 0.5s;
+  transition: left 0.8s;
   box-shadow: 1px 0px 5px #000;
 }
+
+/*#url-input {
+  width: 400px;
+}*/
 
 #top-pane {
   background-color: #eee;
