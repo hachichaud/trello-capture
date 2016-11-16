@@ -14,8 +14,8 @@
 
   <!-- Top control pane -->
   <div id="top-pane">
-  
-      
+
+
     <div class="form-inline">
       <div class="form-group" id="color">
       </div>
@@ -25,14 +25,14 @@
 
       <button id="clear-board" class="btn btn-default">Clear all drawings</button>
     </div>
-    
+
   </div>
 
-  
-  <!-- Left overlay control pane -->  
+
+  <!-- Left overlay control pane -->
   <div id="left-pane">
     <h1>Capture for Trello</h1><br><br>
-        
+
     <div class="form-group">
       <label>Board</label>
       <select id="boardsList" class="form-control"></select>
@@ -45,22 +45,49 @@
 
     <div class="form-group">
       <label>Card name</label>
-      <input type="text" id="cardName" class="form-control">
+      <input type="text" id="cardName" class="form-control" value="ETQU je suis un boulet car je n'ai pas &eacute;crit de titre &agrave; ma carte">
       <div class="alert alert-danger" style="margin-top: 5px; display: none;">The card name must be between 1 and 16384 characters</div>
     </div>
 
     <div class="form-group">
       <label>Description</label>
-      <textarea id="cardDesc" class="form-control" rows="5"></textarea>
+      <textarea id="cardDesc" class="form-control" rows="5" style="height: 300px;">
+How To Bug report:
+Indispensable:
+
+- Comment reproduire le bug ?
+  > Ex. Lorsque je recharge la page sur un crossfilter, un Toucan vient en popup me dire 'non'
+
+- Quel est le comportement attendu ?
+  > Ex. Lorsque je recharge la page sur un crossfilter, un Toucan vient en popup me dire 'oui'
+
+- Ne pas oublier de pr&eacute;ciser:
+  - OS: iOS, Windows, MacOSX ...
+  - Device: samsung galaxy XIII ...
+
+- Urgence priorit&eacute; projet:
+  > Ex.: C'est bloquant sur X projet, deadline 3 octobre
+
+En bonus:
+
+- screenshots suppl&eacute;mentaires ?
+- URL suppl&eacute;mentaire pour reproduire !!!
+
+      </textarea>
       <div class="alert alert-danger" style="margin-top: 5px; display: none;">The card name must be between 0 and 16384 characters</div>
     </div>
-    
+
+    <div class="form-group">
+      <label>Link a url</label>
+      <input type="text" id="url-input" class="form-control">
+    </div>
+
     <div class="checkbox">
       <label>
         <input type="checkbox" id="on-top"> Create on top of list
       </label>
     </div>
-    
+
     <div class="form-group">
       <label>Labels</label>
       <div class="label-pickers">
@@ -72,24 +99,24 @@
         <div class="purple">&nbsp;</div>
       </div>
     </div>
-    
+
     <input type="button" value="Create card" id="createCard" class="btn btn-primary"><br><br>
-    
+
     <div id="progress-bar-container">
-      <div id="progress-bar">    
+      <div id="progress-bar">
       </div>
     </div>
     <div class="alert alert-success" id="cardWasCreated" style="display: none; margin-top: 10px;">Card and screenshot created, closing window ...</div>
-        
+
   </div>
-  
+
 
   <div id="login" style="display: none;">
     <div id="login-box">
-  
+
       <h3>You need to log in to Trello</h3><br>
       <div class="alert alert-danger" style="display: none;">Wrong email or password</div>
-      <form>    
+      <form>
         <div class="form-group">
           <label>Email</label>
           <input type="email" class="form-control" id="login-email">
@@ -99,10 +126,10 @@
           <label>Password</label>
           <input type="password" class="form-control" id="login-password">
         </div>
-        
+
         <input type="button" value="Login to Trello" id="login-button" class="btn btn-primary">
       </form>
-    
+
     </div>
   </div>
 

@@ -8,7 +8,7 @@ function TrelloClient () {
   this.apiSecret = null;
   this.clientToken = null;   // Required to see non public boards
   this.username = null;
-  
+
   this.openBoards = [];
   this.currentLists = [];
   this.currentCards = [];
@@ -59,7 +59,7 @@ TrelloClient.prototype.getClientToken = function(cb) {
         , signature = html.find("input[name='signature']").val()
         ;
     } catch(e) { return callback(e); }
-    
+
     $.ajax({ type: 'POST'
     , url: 'https://trello.com/1/token/approve'
     , data: { approve: approve, requestKey: requestKey, signature: signature }
@@ -91,7 +91,7 @@ TrelloClient.prototype.getClientToken = function(cb) {
 TrelloClient.prototype.getLoggedUsername = function (cb) {
   var self = this
     , callback = cb || function() {};
-  
+
   $.ajax({ url: "https://trello.com/1/Members/me" }).done(function (data) {
     self.username = data.username;
     return callback(null);
@@ -103,7 +103,7 @@ TrelloClient.prototype.getLoggedUsername = function (cb) {
 
 TrelloClient.prototype.getAllBoards = function (cb) {
   var self = this
-    , callback = cb || function() {};  
+    , callback = cb || function() {};
 
   $.ajax({ url: "https://api.trello.com/1/members/" + this.username + "/boards?key=" + this.apiKey + "&token=" + this.clientToken }).done(function(data) {
     self.openBoards = _.filter(data, function(board) { return board.closed === false; });
@@ -116,7 +116,7 @@ TrelloClient.prototype.getAllBoards = function (cb) {
 
 TrelloClient.prototype.getAllLabelsNames = function(boardId, cb) {
   var self = this
-    , callback = cb || function() {};  
+    , callback = cb || function() {};
 
   $.ajax({ url: "https://api.trello.com/1/boards/" + boardId + "/labelNames?key=" + this.apiKey + "&token=" + this.clientToken }).done(function(data) {
     self.currentLabels = data;
@@ -130,7 +130,7 @@ TrelloClient.prototype.getAllLabelsNames = function(boardId, cb) {
 TrelloClient.prototype.getAllCurrentLists = function (boardId, cb) {
   var self = this
     , callback = cb || function() {};
-    
+
   $.ajax({ url: "https://api.trello.com/1/boards/" + boardId + "/lists?key=" + this.apiKey + "&token=" + this.clientToken }).done(function(data) {
     self.currentLists = _.filter(data, function (list) { return list.closed === false; });
     return callback(null);
@@ -143,7 +143,7 @@ TrelloClient.prototype.getAllCurrentLists = function (boardId, cb) {
 TrelloClient.prototype.getAllCurrentCards = function (listId, cb) {
   var self = this
     , callback = cb || function() {};
-    
+
   $.ajax({ url: "https://api.trello.com/1/lists/" + listId + "/cards?key=" + this.apiKey + "&token=" + this.clientToken }).done(function(data) {
     self.currentCards = _.filter(data, function (card) { return card.closed === false; });
     return callback(null);
@@ -159,7 +159,7 @@ TrelloClient.prototype.createCardAtBottomOfCurrentList = function (listId, cardN
     , callback = cb || function() {}
     , labels = _labels.length > 0 ? '&labels=' + _labels.join(',') : ''
     ;
-    
+
   $.ajax({ url: "https://api.trello.com/1/lists/" + listId + "/cards?key=" + this.apiKey + "&token=" + this.clientToken + labels
          , type: 'POST'
          , data: { name: cardName, desc: cardDesc, pos: 'top' }
@@ -176,10 +176,26 @@ TrelloClient.prototype.putCardOnTopOfList = function (cardId, cb) {
   var self = this
     , callback = cb || function() {}
     ;
-    
+
   $.ajax({ url: "https://api.trello.com/1/cards/" + cardId + "?key=" + this.apiKey + "&token=" + this.clientToken
          , type: 'PUT'
          , data: { pos: 'top' }
+         }).done(function(data) {
+    return callback(null, data.id);
+  }).fail(function() {
+    return callback("Unauthorized access");
+  });
+};
+
+
+TrelloClient.prototype.addUrlLink = function (cardId, linkUrl, cb) {
+  var self = this
+    , callback = cb || function() {}
+    ;
+
+  $.ajax({ url: "https://api.trello.com/1/cards/" + cardId + "/attachments" + "?key=" + this.apiKey + "&token=" + this.clientToken
+         , type: 'POST'
+         , data: { url: linkUrl }
          }).done(function(data) {
     return callback(null, data.id);
   }).fail(function() {
@@ -193,14 +209,14 @@ TrelloClient.prototype.putCardOnTopOfList = function (cardId, cb) {
 TrelloClient.prototype.logUserIn = function(email, password, cb) {
   var self = this
     , callback = cb || function() {};
-    
+
   $.ajax({ url: "https://trello.com/authenticate"
          , type: 'POST'
          , data: { user: email, password: password, returnUrl: '/' }
          }).done(function(data, textStatus, jqXHR) {
            if (jqXHR.responseText.match(/<title>Log In[^<]*<\/title>/)) {   // Trello still wants us to login, so login was not successful
              return callback(null, false);
-           } else {           
+           } else {
              return callback(null, true);
            }
          }).fail(function(jqXHR) {
@@ -225,13 +241,13 @@ TrelloClient.prototype.attachBase64ImageToCard = function(cardId, imageData, pro
   for (i = 0; i < length; i++) {
       ua[i] = byteString.charCodeAt(i);
   }
-  
+
   blob = new Blob([ab], { type: mimeType });
   formData = new FormData();
   formData.append("key", this.apiKey);
   formData.append("token", this.clientToken);
   formData.append("file", blob, "trello-capture-screenshot.jpg");    // TODO slugify title or beginning of title
-  
+
   request = new XMLHttpRequest();
   request.upload.addEventListener("progress", progressHandler || function () {});
   request.onload = endHandler || function () {};
